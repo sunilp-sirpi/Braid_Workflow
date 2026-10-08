@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Braid User Flow Wireframe</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top bar: title, legend, zoom buttons and the persona buttons -->
+  <header class="toolbar">
+    <div class="toolbar-row">
+      <h1>Braid – User Flow Wireframe</h1>
+      <span class="meta" id="meta"></span>
+      <span class="legend">
+        <span><i class="dot screen"></i>Screen</span>
+        <span><i class="dot notice"></i>Notification</span>
+        <span>Number = step order</span>
+      </span>
+      <span class="spacer"></span>
+      <button id="zoomOut" aria-label="Zoom out">−</button>
+      <span id="zoomLabel">100%</span>
+      <button id="zoomIn" aria-label="Zoom in">+</button>
+      <button id="reset">100%</button>
+      <button id="downloadPdf">Download PDF</button>
+    </div>
+
+    <!-- Buttons are created by script.js from data.js -->
+    <nav class="toolbar-row persona-nav" id="personaNav"></nav>
+  </header>
+
+  <!-- The wireframe. It sits in the middle of this area. -->
+  <main class="viewport" id="viewport">
+    <div class="canvas" id="canvas"></div>
+  </main>
+
+  <!-- Full-size viewer (opens when a card is clicked) -->
+  <div class="viewer" id="viewer" hidden>
+    <div id="viewerImage"></div>
+    <div class="info">
+      <div class="crumb" id="viewerCrumb"></div>
+      <h2 id="viewerTitle"></h2>
+      <p id="viewerDesc"></p>
+    </div>
+    <div class="viewer-buttons">
+      <button id="prev">← Previous step</button>
+      <button id="close">Close (Esc)</button>
+      <button id="next">Next step →</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script src="data.js"></script>
+  <script src="script.js"></script>
+
+</body>
+</html>
