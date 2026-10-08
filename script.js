@@ -300,43 +300,102 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "ArrowLeft") openViewer(currentIndex - 1);
 });
 
-// ----------download-----------
+/// ---------- Download PDF ----------
 
 document.getElementById("downloadPdf").addEventListener("click", async () => {
-  const { jsPDF } = window.jspdf;
+  const button = document.getElementById("downloadPdf");
+  const wireframe = document.getElementById("canvas");
 
-  const canvas = await html2canvas(document.getElementById("canvas"), {
-    scale: 2,
-    useCORS: true
-  });
+  try {
+    button.disabled = true;
+    button.textContent = "Generating PDF...";
 
-  const imgData = canvas.toDataURL("image/png");
+    // Make sure all images are loaded
+    const images = Array.from(wireframe.querySelectorAll("img"));
 
-  const pdf = new jsPDF("landscape", "mm", "a4");
+    await Promise.all(
+      images.map((img) => {
+        if (img.complete) return Promise.resolve();
 
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
+        return new Promise((resolve) => {
+          img.onload = resolve;
+          img.onerror = resolve;
+        });
+      })
+    );
 
-  const imgWidth = pageWidth;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    // Remember current zoom
+    const originalZoom = zoom;
 
-  let heightLeft = imgHeight;
-  let position = 0;
+    // Capture at normal 100% zoom
+    setZoom(1);
 
-  pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
-  heightLeft -= pageHeight;
+    // Capture the wireframe
+    const captured = await html2canvas(wireframe, {
+      scale: 1,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      logging: false
+    });
 
-  while (heightLeft > 0) {
-    position = heightLeft - imgHeight;
-    pdf.addPage();
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
+    // Restore zoom
+    setZoom(originalZoom);
+
+    const { jsPDF } = window.jspdf;
+
+    const pdf = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4"
+    });
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const margin = 8;
+    const usableWidth = pageWidth - margin * 2;
+    const usableHeight = pageHeight - margin * 2;
+
+    const ratio = captured.width / captured.height;
+
+    let width = usableWidth;
+    let height = width / ratio;
+
+    if (height > usableHeight) {
+      height = usableHeight;
+      width = height * ratio;
+    }
+
+    const x = (pageWidth - width) / 2;
+    const y = (pageHeight - height) / 2;
+
+    const image = captured.toDataURL("image/png");
+
+    pdf.addImage(
+      image,
+      "PNG",
+      x,
+      y,
+      width,
+      height
+    );
+
+    pdf.save("BRAID_User_Flow_Wireframe.pdf");
+
+  } catch (error) {
+    console.error("PDF generation failed:", error);
+
+    alert(
+      "PDF generation failed. Please open F12 → Console and check the red error."
+    );
+
+  } finally {
+    button.disabled = false;
+    button.textContent = "Download PDF";
   }
-
-  pdf.save("BRAID_User_Flow_Wireframe.pdf");
 });
-
 
 // ---------- 8. Start ----------
 buildTree();
